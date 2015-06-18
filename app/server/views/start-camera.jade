@@ -1,0 +1,151 @@
+extends layout
+
+block content
+    style.
+        .button-disabled {
+            opacity: 0.47; 
+            cursor: not-allowed;
+        }
+        .button-clear {
+            opacity: 1; 
+            cursor: auto;
+        }
+
+    h2 #{title}
+    b
+        span
+            | Username: 
+    | #{user}
+
+    br
+
+
+    div#divMsg(style='display:none;height:100%;width:600px;background-color: #CBCBCB;font-size: 14px;padding: 17px 0px 15px 62px;font-family: arial;margin-left: 16%;')
+        label#msg(style='color:red;')
+    
+    form(id="frmCamera")
+        fieldset(style='width: 500px;text-align: center;margin-left: 23%;')
+            legend List of cameras
+            table
+                tr
+                    th Camera ID
+                    th Start
+                    th Stop
+                each device in devices
+                    tr
+                        td(width="350",id='cam_id') #{device.device_id}
+                        td
+                            if device.device_status==true
+                                button(type="button",class='button-disabled',name='start_btn_#{device.device_id}',id='start_btn_#{device.device_id}',onclick='start_camera("#{device.device_id}")' ) Start
+                            else
+                                button(type="button",class='button-clear',name='start_btn_#{device.device_id}',id='start_btn_#{device.device_id}',onclick='start_camera("#{device.device_id}")' ) Start
+                        td
+                            if device.device_status==false
+                                button(type="button",class='button-disabled',name='stop_btn_#{device.device_id}',id='stop_btn_#{device.device_id}',onclick='stop_camera("#{device.device_id}")' ) Stop
+                            else
+                                button(type="button",class='button-clear',name='stop_btn_#{device.device_id}',id='stop_btn_#{device.device_id}',onclick='stop_camera("#{device.device_id}")' ) Stop
+
+
+    script.
+        //$( "#myselect" ).val();
+        //alert($( "#myselect option:selected" ).text());
+        //$( "#ddlocation" ).change(function() {
+            //alert($( "#ddlocation" ).val());
+            //var ddvalue=$( "#ddlocation" ).val();
+        //    var ddtext=$('#ddlocation :selected').text();
+        //    var url='/check_camera';
+        //    $.ajax({
+        //       type:'get',
+        //        url:url,
+        //        data:{'location':ddtext},
+        //        success:function(data){
+                    //window.location='/userlist';
+        //            if(data=='Please select a location')
+        //             {   
+        //                document.getElementById("dvCamSetting").style.display = "none";
+        //                alert(data);
+        //                }
+        //            if(data=='ok')
+        //            document.getElementById("dvCamSetting").style.display = "block";
+        //        }
+        //    });
+        //});
+
+        
+        function start_camera(device_id){
+        var stop_button_id="stop_btn_"+device_id+"";
+        var start_button_id="start_btn_"+device_id+"";
+        var check=document.getElementById(stop_button_id).className;
+        if(check=='button-clear'){
+        alert('Please stop your camera first');
+        } else
+        {
+        var url='/start_camera';
+        //var ddvalue=$( "#ddlocation" ).val();
+        //alert(device_id);
+            $.ajax({
+                type:'get',
+                url:url,
+                data:{'device_id':device_id},
+                success:function(data){
+                if(data.status==true){
+                    
+                    alert(data.message);
+                    document.getElementById(start_button_id).className = "button-disabled";
+                    document.getElementById(stop_button_id).className = "button-clear";
+                }else
+                if(data.status==false){
+                alert(data.message);
+                } 
+                    //window.location='/userlist';
+                    //alert(data.device_id);
+                }
+            });
+            }
+        }
+        function stop_camera(device_id){
+        var stop_button_id="stop_btn_"+device_id+"";
+        var start_button_id="start_btn_"+device_id+"";
+        var check=document.getElementById(start_button_id).className;
+        if(check=='button-clear'){
+        alert('Please start your camera first');
+        } else
+        {
+        var url='/stop_camera';
+        //var ddvalue=$( "#ddlocation" ).val();
+        //alert(device_id);
+            $.ajax({
+                type:'get',
+                url:url,
+                data:{'device_id':device_id},
+                success:function(data){
+                if(data.status==true){
+                    alert(data.message);
+                    document.getElementById(start_button_id).className = "button-clear";
+                    document.getElementById(stop_button_id).className = "button-disabled";
+                } else if(data.status==false){
+                alert(data.message);
+                }
+                    //window.location='/userlist';
+                    //alert(data.device_id);
+                }
+            });
+            }
+        }
+        var socket=io();
+        socket.on('reload',function(data){
+            //alert(data);
+            location.reload();
+        });
+        socket.on('file is uploading',function(data){
+            document.getElementById('divMsg').style.display='block';
+            $("#msg").text(data);
+        });
+        socket.on('video uploaded',function(data){
+            document.getElementById('divMsg').style.display='block';
+            $("#msg").text(data); 
+        })
+        socket.on('file uploading error',function(data){
+            document.getElementById('divMsg').style.display='block';
+            $("#msg").text(data); 
+        })

@@ -1,0 +1,22 @@
+extends layout
+
+block content
+    h2 #{title}
+
+    form(id="frmUser", method="POST")
+        fieldset(style='height:135px;width:26%;padding:35px 0px 0px 56px;')
+            legend User login
+            input(type="text", placeholder="Enter your name",name='name',id='name')
+            br
+            br
+            button(type="submit",name='btnSubmit' ,onclick='validate(event)') Enter
+
+    script.
+        function validate(event){
+        val=$("#name").val();
+        if(val==""){
+        alert('Please enter a name');
+        //return false;
+        event.preventDefault();
+        }
+        }
