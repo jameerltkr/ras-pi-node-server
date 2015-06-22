@@ -8,7 +8,9 @@ var device_schema = mongoose.Schema({
 	device_playing:Boolean,
 	device_test:Boolean,
 	created_date:Date,
-	last_modified:Date
+	last_modified:Date,
+
+	token_expiring:Boolean
 });
 
 var Device = mongoose.model('Device', device_schema);

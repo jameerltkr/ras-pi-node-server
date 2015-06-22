@@ -23,11 +23,6 @@ module.exports=function(app,user,socket,multer){
 /* serves main page */
  app.get("/", function(req, res) {
 
-    Recording.Recording.find(function(err,data){
-        console.log(data);
-    })
-
-
     logger.info('GET request for home page');
     logger.info('Rendering index.jade page on browser.');
     res.render('index.jade',{title:'Raspberry PI app'});
@@ -318,7 +313,7 @@ app.get('/stop_camera',function(req,res){
             logger.info('Matching device_password in database');
             if(device.device_password!=req.body.device_password){
                 logger.info('Password does not match');
-                logger.ifno('Sending false response to device.');
+                logger.info('Sending false response to device.');
                 res.json({ success: false, message: 'Authentication failed. Wrong password.' });
             }
             else{
@@ -326,11 +321,11 @@ app.get('/stop_camera',function(req,res){
                 // if device is found and password is right
                 // create a token
                 logger.info('Creating jSonWebToken');
-                var token = jwt.sign({device:device}, app.get('superSecret'));
-                //var token = jwt.sign({device:device}, app.get('superSecret'), {
-                //expiresInMinutes: 1 // expires in 1 minute  # for testing
-                //expiresInMinutes: 1440 // expires in 24 hours
-                //});
+                //////var token = jwt.sign({device.device_id:device.device_id}, app.get('superSecret'));
+                var token = jwt.sign({device:device.device_id}, app.get('superSecret'), {
+                //expiresInMinutes: 1 // expires in 1 minute  # Enable if testing
+                expiresInMinutes: 1440 // expires in 24 hours
+                });
                 logger.info('JSONWEBTOKEN created. Sending to the client');
                 //=======================================
                 // Refreshing the view page to reload the new device_id
@@ -367,6 +362,31 @@ app.get('/stop_camera',function(req,res){
             }
             else{
                 // token verified
+
+                //var token_exp = decoded.exp;
+                //var now = moment().unix().valueOf();
+                //if((token_exp - now) <10) {
+                //       var newToken = jwt.sign({device:decoded.device.device_id}, app.get('superSecret'), {
+                //        //expiresInMinutes: 1 // expires in 1 minute  # Enable if testing
+                //        expiresInMinutes: 1440 // expires in 24 hours
+                //    });
+                //    if(newToken) {
+                //        res.send({
+                //            status:false,
+
+                //        })
+                //    }
+                //    else{
+
+                 //   }
+                //}else{
+                    logger.info('Token verified. Now client can access the information');
+                    req.decode=decoded;
+                    next();
+                //}
+
+
+
                 /*  Saving the time of each request in session devicewise
                 for checking that 
                 request is arriving in every 5 seconds.
@@ -381,9 +401,7 @@ app.get('/stop_camera',function(req,res){
                   // it means that device had stopped working for 5 sec
                   // and sholud be disabled.
                 //   ---End
-                logger.info('Token verified. Now client can access the information');
-                req.decode=decoded;
-                next();
+                
             }
         });
         //},1*60);
